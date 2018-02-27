@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style>
+			.container{
+				height: 300px;
+				background-color: pink;
+			}
+		</style>
+	</head>
+	<body>
+		
+		<div class="container">
+			<input type="file" class="myFile" multiple="true">
+			<p class="text"></p>
+		</div>
+		<img src="" alt="123"  class="img"/>
+	</body>
+	<script src="../js/2.1.1-jquery.min.js"></script>
+	<script>
+		$('.myFile').on('change', function(e){
+			var files = this.files;
+			var reader = new FileReader();
+			reader.readAsDataURL(files[0])
+			
+			
+			reader.onload = function(){
+				var html = '';
+				console.log(reader.result)
+				$('.img').attr('src',reader.result)
+			}
+			console.log(files)
+		})
+		
+		$('.container')
+		.on('dragenter',function(e){
+			//e.stopPropagation();
+			e.preventDefault();
+		})
+		.on('dragover',function(e){
+			//e.stopPropagation();
+			e.preventDefault();
+		})
+		
+		.on('drop', function(e){
+			e.stopPropagation();
+			e.preventDefault();
+			var reader = new FileReader();
+			var files = e.originalEvent.dataTransfer.files;
+			reader.readAsText(files[0], 'UTF-8')
+			reader.onload = function(){
+				var html = '';
+				console.log(reader.result)
+				//$('.img').attr('src',reader.result)
+				$('.text').text(reader.result)
+			}
+			
+			console.log(files)
+		})
+	</script>
+</html>

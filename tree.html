@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<!--<link rel="stylesheet" type="text/css" href="./css/bootstrap.css"/>-->
+		<link rel="stylesheet" href="./font-awesome/css/font-awesome.css">
+		<style>
+			.tree-container{
+				display: flex;
+				justify-content: center;
+				width: 1300px;
+				height: 600px;
+				overflow: auto;
+				margin-top: 50px;
+			}
+			.child-node-wrap .node-group{
+				display: table-cell;
+				padding: 50px 10px;
+			}
+			.node-wrap{
+				position: relative;
+			}
+			/*只要不是叶子节点都应该展示的线*/
+			.node-wrap:not(.leaf)::after{
+				content: ' ';
+				width: 1px;
+				height: 20px;
+				background-color: #C4C4C4;
+				position: absolute;
+				bottom: -20px;
+				left: 50%;
+			}
+			/*若是只有一个child那么高度从20px增加到50px*/
+			.node-wrap.has-one-child::after{
+				height: 50px;
+				bottom: -50px;
+			}
+			/*每个node-group中不是第一个和最后一个的node-wrap都会显示的线*/
+			.child-node-wrap .node-group:not(:first-child):not(:last-child) .node-wrap::before{
+				content: '';
+				position: absolute;
+				height: 30px;
+				width: 1px;
+				background-color: red;
+				top:-30px;
+				left: 50%;
+			}
+			.node{
+				width: 180px;
+				height: 100px;
+				border: 1px dashed powderblue;
+				margin: auto;
+				text-align: center;
+			}
+			.root-node{
+				width: 200px;
+				height: 100px;
+				border: 1px solid deeppink;
+			}
+			.leg{
+				position: absolute;
+				bottom: -50px;
+				left: 0;
+				border: 1px solid #C4C4C4;
+				height: 30px;
+				margin: 0;
+				border-bottom: none;
+			}
+			.fr{
+				float: right;
+			}
+			.drag-box{
+				background: #a6d5ec;
+				width: 180px;
+				height: 100px;
+				line-height: 100px;
+				text-align: center;
+				margin: 100px 100px 0 0;
+			}
+			.entering-node{
+				border: 1px dashed red;
+			}
+			/*.icon-wrap{*/
+				/*position: absolute;*/
+				/*bottom: -5px;*/
+				/*left: 50%;*/
+				/*cursor:pointer;*/
+			/*}*/
+			/*.icon-wrap i{*/
+				/*position: relative;*/
+				/*left: -7px;*/
+				/*color: #2aabd2;*/
+			/*}*/
+		</style>
+	</head>
+	<body>
+		
+		<!--<i class="fa fa-check-square fa-lg"></i> fa-lg-->
+		<div class="drag-wrap fr">
+			<div class="drag-box" draggable="true">拖动我到左侧区域</div>
+		</div>
+		<div class="tree-container">
+			<div class="node-group">
+				<div class="node-wrap">
+					<div class="node root-node">0_0</div>
+					<!--<div class="hook-mini icon-wrap"><i class="fa fa-window-minimize"></i></div>-->
+					<p class="leg"></p>
+				</div>
+				<div class="child-node-wrap">
+					<div class="node-group">
+						<div class="node-wrap">
+							<div class="node">1_1</div>
+							<p class="leg"></p>
+						</div>
+						<div class="child-node-wrap">
+							<div class="node-group">
+								<div class="node-wrap">
+									<div class="node">2_1</div>
+									<p class="leg"></p>
+								</div>
+								<div class="child-node-wrap">
+									<div class="node-group">
+										<div class="node">3_1</div>
+										<p class="leg"></p>
+									</div>
+									<div class="child-node-wrap">
+
+									</div>
+								</div>
+							</div>
+							<div class="node-group">
+								<div class="node-wrap">
+									<div class="node">2_2</div>
+									<p class="leg"></p>
+								</div>
+								<div class="child-node-wrap">
+								</div>
+							</div>
+							<div class="node-group">
+								<div class="node-wrap">
+									<div class="node">2_3</div>
+									<p class="leg"></p>
+								</div>
+								<div class="child-node-wrap"></div>
+							</div>
+						</div>
+					</div>
+					<div class="node-group">
+						<div class="node-wrap leaf">
+							<div class="node">1_2</div>
+							<p class="leg"></p>
+						</div>
+						<div class="child-node-wrap"></div>
+					</div>
+				</div>
+			</div>
+			
+		</div>
+
+	</body>
+	<script src="./js/2.1.1-jquery.min.js"></script>
+	<script>
+
+		var $node_html = $(' <div class="node-group"> \
+								<div class="node-wrap">\
+									<div class="node">我是被拖过来的</div>\
+									<p class="leg"></p>\
+								</div>\
+								<div class="child-node-wrap"></div>\
+							</div>')
+
+		function init(){
+			drawLine();
+            regEvent()
+		}
+		
+		function drawLine(){
+			var legArr = $('.tree-container').find('.leg');
+			legArr.each(function(index,item){
+				var $ele = $(item);
+				var $nodeWrap = $ele.closest('.node-wrap');
+				var $nodeGroup = $ele.closest('.node-group');
+				var $childWrap = $nodeGroup.children('.child-node-wrap');
+				var $first = $childWrap.children('.node-group:first');
+				var $last = $childWrap.children('.node-group:last');
+			
+				
+				if(!$nodeGroup.siblings('.node-group').length){
+					$nodeGroup.addClass('unique')
+				}
+				
+				if($childWrap.children('.node-group').length === 0){
+					$nodeWrap.addClass('leaf');
+					$ele.hide();
+				}else if($childWrap.children('.node-group').length === 1){
+					$nodeWrap.addClass('has-one-child');
+					$ele.hide();
+				}else if($childWrap.children('.node-group').length >= 2){
+					var rectFirst = $first[0].getBoundingClientRect();
+					var rectLast = $last[0].getBoundingClientRect();
+					var left = rectFirst.left + (rectFirst.right - rectFirst.left)/2;
+					var right = rectLast.left + (rectLast.right - rectLast.left)/2;
+					var rectParent = $nodeWrap[0].getBoundingClientRect();
+					var width = right - left;
+					var posLeft = left -  rectParent.left;
+					$ele.show().css({
+						width:width,
+						left:posLeft
+					});
+				}
+			});
+		}
+
+		function regEvent() {
+            $('.drag-box').on('dragstart',function (e) {
+                // console.log(this)
+            })
+                .on('dragend', function (e) {
+                    //console.log(this)
+                })
+
+            $('.node')
+                .on('dragenter', function (e) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    var $node = $(this);
+                    $node.addClass('entering-node')
+                })
+                .on('dragover', function (e) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                })
+                .on('dragleave', function (e) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    var $node = $(this);
+                    $node.removeClass('entering-node')
+                })
+                .on('drop', function (e) {
+                    event.stopPropagation();
+                    event.preventDefault();
+
+                    var $node = $(this);
+                    var $nodeWrap = $node.closest('.node-wrap');
+                    var $nodeChildWrap = $node.closest('.node-group').find('>.child-node-wrap');
+                    if($nodeWrap.hasClass('leaf')){
+                        $node.removeClass('entering-node')
+                        alert('我是叶子节点，不能有子节点了')
+                        return
+                    }
+                    $nodeChildWrap.append($node_html)
+                    drawLine()
+                })
+
+            $('.hook-mini').on('click', function (e) {
+                var $nodeGroup = $(this).closest('.node-group');
+                var $childNodesWrap = $nodeGroup.children('.child-node-wrap')
+                $childNodesWrap.hide();
+                drawLine()
+            })
+
+			//regEvent end.
+        }
+		
+		init();
+
+
+	</script>
+</html>
